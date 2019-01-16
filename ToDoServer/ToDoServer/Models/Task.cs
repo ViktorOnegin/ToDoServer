@@ -15,6 +15,6 @@ namespace ToDoServer.Models
         public string Title { get; set; }
         public string Desc { get; set; }
         public bool MarkedAsDone { get; set; }
-        public readonly DateTime CeatedAt;
+        public DateTime CeatedAt { get; set; } = DateTime.Now; 
     }
 }

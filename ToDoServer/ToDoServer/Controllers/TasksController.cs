@@ -6,6 +6,7 @@ using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
 using System.Web.Http.Description;
 using ToDoServer.Models;
@@ -19,14 +20,16 @@ namespace ToDoServer.Controllers
         // GET: api/Tasks
         public IQueryable<Task> GetTasks()
         {
-            return db.Tasks;
+            string username = HttpContext.Current.User.Identity.Name;
+            return db.Tasks.Where(task_1 => task_1.AccountID == username);
         }
 
         // GET: api/Tasks/5
         [ResponseType(typeof(Task))]
         public IHttpActionResult GetTask(int id)
         {
-            Task task = db.Tasks.Find(id);
+            string username = HttpContext.Current.User.Identity.Name;
+            Task task = db.Tasks.FirstOrDefault(task_2 => task_2.AccountID == username && task_2.ID == id);
             if (task == null)
             {
                 return NotFound();
@@ -45,6 +48,12 @@ namespace ToDoServer.Controllers
             }
 
             if (id != task.ID)
+            {
+                return BadRequest();
+            }
+
+            string username = HttpContext.Current.User.Identity.Name;
+            if(db.Tasks.FirstOrDefault(task_2 => task_2.AccountID == username && task_2.ID == id) == null)
             {
                 return BadRequest();
             }
@@ -79,6 +88,8 @@ namespace ToDoServer.Controllers
                 return BadRequest(ModelState);
             }
 
+
+            task.AccountID = HttpContext.Current.User.Identity.Name;
             db.Tasks.Add(task);
             db.SaveChanges();
 
@@ -89,7 +100,9 @@ namespace ToDoServer.Controllers
         [ResponseType(typeof(Task))]
         public IHttpActionResult DeleteTask(int id)
         {
-            Task task = db.Tasks.Find(id);
+            string username = HttpContext.Current.User.Identity.Name;
+            Task task = db.Tasks.FirstOrDefault(task_2 => task_2.AccountID == username && task_2.ID == id);
+
             if (task == null)
             {
                 return NotFound();
